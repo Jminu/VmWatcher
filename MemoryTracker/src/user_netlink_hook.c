@@ -222,6 +222,15 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 		received_data = (struct syscall_data*)NLMSG_DATA(nlh);
 		hooked_pid = received_data->pid;
+
+		char hooked_pid_num[16];
+		sprintf(hooked_pid_num, "%d", hooked_pid);
+		char hooked_proc_path[64];
+		snprintf(hooked_proc_path, sizeof(hooked_proc_path), "/proc/%s", hooked_pid_num);
+		if (access(hooked_proc_path, F_OK) == -1) {
+			break;
+		}
+
 		if (hooked_pid != pid) { // 관찰중인 프로세스 아니라면 생략
 			continue;
 		}
