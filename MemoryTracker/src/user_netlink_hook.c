@@ -264,9 +264,9 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 	static long cnt_page_fault = 0;
 
 	while (1) {
-		int read_bytes = read(read_pipe_fd, &recv_pipe_data, sizeof(recv_pipe_data));
+		int read_bytes = read(read_pipe_fd, &recv_pipe_data, sizeof(recv_pipe_data)); // 부모한테 파이프에서 전달 이벤트 대기
 		
-		if (read_bytes > 0) { // 부모한테 파이프에서 전달 이벤트 대기
+		if (read_bytes > 0) {
 			cursor_to(1, 1); // (1) - (1, 1)로 이동
 			clear_line_n2m(1, 50); // (2) - 1열부터 50열까지 지움
 			cursor_to(1, 1); // (3) - 다시 (1, 1)로 이동
