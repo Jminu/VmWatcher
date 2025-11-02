@@ -222,7 +222,7 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 		received_data = (struct syscall_data*)NLMSG_DATA(nlh);
 		hooked_pid = received_data->pid;
-		if (hooked_pid != pid) {
+		if (hooked_pid != pid) { // 관찰중인 프로세스 아니라면 생략
 			continue;
 		}
 
@@ -234,18 +234,19 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 		int written_bytes;
 		written_bytes = write(write_pipe_fd, &pipe_data, sizeof(pipe_data)); // send struct to child proc
-		if (written_bytes == -1) {
+		if (written_bytes == -1) { // 쓰기 에러
 			if (errno == EPIPE) { // 자식파이프 close 일 때
 				printf("[PARENT] Child Process Terminated\n");
 				break;
 			}
-			else { // 쓰기 에러
+			else { // 쓰기 기타 에러
 				perror("Write Error");
 				close(write_pipe_fd);
 				break;
 			}
 		}
 	}
+	cursor_to(18, 1);
 	printf("[Parent] Listen Exiting...\n");
 } 
 
@@ -271,9 +272,9 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 			clear_line_n2m(1, 50); // (2) - 1열부터 50열까지 지움
 			cursor_to(1, 1); // (3) - 다시 (1, 1)로 이동
 
-			FILE *status_fd = open_proc_stat(recv_pipe_data.hooked_pid);
+			FILE *status_fd = open_proc_stat(recv_pipe_data.hooked_pid); // 관찰중인 프로세스 열어봄
 			if (status_fd == NULL) {
-				cursor_to(8, 1);
+				cursor_to(17, 1);
 				printf("Process Terminated\n");
 				break;
 			}
@@ -308,11 +309,12 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 			print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
 		}
 		else {
+			cursor_to(16, 1);
 			printf("[CHILD] Parent proc error\n");
 			break;
 		}
 	}
-	cursor_to(9, 1);
+	cursor_to(15, 1);
 	printf("[CHILD] Child Proc 종료..\n");
 }
 
