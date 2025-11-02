@@ -1,4 +1,4 @@
-# Memory Tracing Tool
+# VmWatcher
 이벤트 기반 실시간 메모리 프로파일러
 
 ## 주요 특징
