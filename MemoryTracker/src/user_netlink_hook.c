@@ -236,10 +236,12 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 		written_bytes = write(write_pipe_fd, &pipe_data, sizeof(pipe_data)); // send struct to child proc
 		if (written_bytes == -1) { // 쓰기 에러
 			if (errno == EPIPE) { // 자식파이프 close 일 때
+				cursor_to(20, 1);
 				printf("[PARENT] Child Process Terminated\n");
 				break;
 			}
 			else { // 쓰기 기타 에러
+				cursor_to(19, 1);
 				perror("Write Error");
 				close(write_pipe_fd);
 				break;
