@@ -168,7 +168,7 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 	pid_t pid;
 	printf("[Watch PID]: ");
-	scanf("%d", &pid);
+	scanf("%d", &pid); // 관찰하려는 프로세스 PID입력
 
 	nl_socket_fd = set_nl_socket(); // get netlink socket fd
 
@@ -206,8 +206,15 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	char child_proc_path[64];
 	snprintf(child_proc_path, sizeof(child_proc_path), "/proc/%s", proc_num);
 
+	char monitored_pid[16];
+	sprintf(monitored_pid, "%d", pid);
+	char monitored_proc_path[64];
+	snprintf(monitored_proc_path, sizeof(monitored_proc_path), "/proc/%s", monitored_pid);
 	while (1) {
 		if (access(child_proc_path, F_OK) == -1) { // /proc/[child_pid]가 없다면
+			break;
+		}
+		if (access(monitored_proc_path, F_OK) == -1) { // 관찰중인 프로세스가 살아있는지 검사
 			break;
 		}
 
@@ -222,14 +229,6 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 		received_data = (struct syscall_data*)NLMSG_DATA(nlh);
 		hooked_pid = received_data->pid;
-
-		char hooked_pid_num[16];
-		sprintf(hooked_pid_num, "%d", hooked_pid);
-		char hooked_proc_path[64];
-		snprintf(hooked_proc_path, sizeof(hooked_proc_path), "/proc/%s", hooked_pid_num);
-		if (access(hooked_proc_path, F_OK) == -1) {
-			break;
-		}
 
 		if (hooked_pid != pid) { // 관찰중인 프로세스 아니라면 생략
 			continue;
