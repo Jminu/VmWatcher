@@ -13,6 +13,7 @@
 #include "log.h"
 #include <errno.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 // 커널과 동일한 프로토콜 ID 및 구조체 정의
 #define NETLINK_JMW 30
@@ -199,21 +200,14 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	clear_screen();
 
 	/*
-	 *	자식프로세스 /proc/[child_pid]경로 생성
+	 *	관찰 프로세스 /proc/[pid]경로 생성
 	 */
-	char proc_num[16];
-	sprintf(proc_num, "%d", child_pid);
-	char child_proc_path[64];
-	snprintf(child_proc_path, sizeof(child_proc_path), "/proc/%s", proc_num);
-
 	char monitored_pid[16];
 	sprintf(monitored_pid, "%d", pid);
 	char monitored_proc_path[64];
 	snprintf(monitored_proc_path, sizeof(monitored_proc_path), "/proc/%s", monitored_pid);
+
 	while (1) {
-		if (access(child_proc_path, F_OK) == -1) { // /proc/[child_pid]가 없다면
-			break;
-		}
 		if (access(monitored_proc_path, F_OK) == -1) { // 관찰중인 프로세스가 살아있는지 검사
 			break;
 		}
@@ -256,9 +250,18 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 			}
 		}
 	}
+	/*
+		관찰중인 프로세스 종료되었을 때..
+	*/
+	close(nl_socket_fd); // 넷링크 소켓 닫고
+	free(nlh);
+	close(write_pipe_fd); // 쓰기 파이프 닫고
+
+	waitpid(child_pid, NULL, 0); // 자식 프로세스가 종료될 떄까지 대기
+
 	cursor_to(18, 1);
-	printf("[Parent] Listen Exiting...\n");
-} 
+	printf("[Parent] Listen Exiting...\n"); // 부모 프로세스 종료
+}
 
 /*
  *  Child Proc
@@ -285,9 +288,10 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 			FILE *status_fd = open_proc_stat(recv_pipe_data.hooked_pid); // 관찰중인 프로세스 열어봄
 			if (status_fd == NULL) {
 				cursor_to(17, 1);
-				printf("Process Terminated\n");
+				printf("[CHILD] 관찰중인 프로세스가 종료됨\n");
 				break;
 			}
+
 			MEM_INFO mem_info = get_mem_info(status_fd);
 			fclose(status_fd);
 
@@ -318,9 +322,14 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 
 			print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
 		}
+		else if (read_bytes == 0){ // read가 0을 반환 -> 부모의 write파이프 닫힘
+			cursor_to(16, 1);
+			printf("[CHILD] 부모 listener 종료\n");
+			break;
+		}
 		else {
 			cursor_to(16, 1);
-			printf("[CHILD] Parent proc error\n");
+			printf("[CHILD] read 에러\n");
 			break;
 		}
 	}
