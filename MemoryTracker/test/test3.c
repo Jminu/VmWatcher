@@ -110,5 +110,6 @@ void mixed_memory_test() {
 int main() {
     print_self_pid();
     mixed_memory_test();
+    sleep(1);
     return 0;
 }
