@@ -350,7 +350,12 @@ void run(FILE *log_fd) {
 		exit(1);
 	}
 
+	struct timeval start_tv;
+	struct timeval end_tv;
+
+
 	pid = fork();
+	gettimeofday(&start_tv, NULL);
 	if (pid == 0) { // child
 		close(fd[WRITE_PIPE]);
 		anal_child(fd[READ_PIPE], log_fd);
@@ -361,5 +366,14 @@ void run(FILE *log_fd) {
 	else { // parent
 		close(fd[READ_PIPE]);
 		listen_syscall(fd[WRITE_PIPE], pid); // 부모가 자식 pid도 받음
+		gettimeofday(&end_tv, NULL);
+
+		long long start_ms = (long long)start_tv.tv_sec * 1000 + (long long)start_tv.tv_usec / 1000;
+		long long end_ms = (long long)end_tv.tv_sec * 1000 + end_tv.tv_usec / 1000;
+		long long duration_ms = end_ms - start_ms;
+
+		cursor_to (21, 1);
+    	printf("Total Elapsed Time: %lld ms\n", duration_ms); // %lld로 수정
+    	fflush(stdout); // 즉시 터미널에 출력
 	}
 }
