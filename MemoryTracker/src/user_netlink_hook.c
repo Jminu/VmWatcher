@@ -311,7 +311,7 @@ void run(FILE *log_fd) {
 
 	long long start_ms = (long long)start_tv.tv_sec * 1000 + (long long)start_tv.tv_usec / 1000;
 	long long end_ms = (long long)end_tv.tv_sec * 1000 + end_tv.tv_usec / 1000;
-	duration_ms = end_ms - start_ms;
+	long long duration_ms = end_ms - start_ms;
 
 	cursor_to (21, 1);
     printf("Total Elapsed Time: %lld ms\n", duration_ms); // %lld로 수정
