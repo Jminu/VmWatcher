@@ -243,7 +243,7 @@ static void listen_syscall(FILE *log_fd) {
 		cursor_to(1, 1); // (3) - 다시 (1, 1)로 이동
 
 
-		FILE *status_fd = open_proc_stat(recv_pipe_data.hooked_pid); // 관찰중인 프로세스 열어봄
+		FILE *status_fd = open_proc_stat(hooked_pid); // 관찰중인 프로세스 열어봄
 		if (status_fd == NULL) {
 			cursor_to(17, 1);
 			printf("[CHILD] 관찰중인 프로세스가 종료됨\n");
@@ -253,13 +253,13 @@ static void listen_syscall(FILE *log_fd) {
 		MEM_INFO mem_info = get_mem_info(status_fd);
 		fclose(status_fd);
 
-		if (strcmp(recv_pipe_data.syscall_name, "brk") == 0) {
+		if (strcmp(received->syscall_name, "brk") == 0) {
 			cnt_brk++;
 		}
-		else if (strcmp(recv_pipe_data.syscall_name, "mmap") == 0) {
+		else if (strcmp(received->syscall_name, "mmap") == 0) {
 			cnt_mmap++;
 		}
-		else if (strcmp(recv_pipe_data.syscall_name, "munmap") == 0) {
+		else if (strcmp(received->syscall_name, "munmap") == 0) {
 			cnt_munmap++;
 		}
 		else {
