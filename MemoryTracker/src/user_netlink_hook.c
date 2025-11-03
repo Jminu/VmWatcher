@@ -292,9 +292,9 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 		int read_bytes = read(read_pipe_fd, &recv_pipe_data, sizeof(recv_pipe_data)); // 부모한테 파이프에서 전달 이벤트 대기
 		
 		if (read_bytes > 0) {
-			cursor_to(1, 1); // (1) - (1, 1)로 이동
-			clear_line_n2m(1, 50); // (2) - 1열부터 50열까지 지움
-			cursor_to(1, 1); // (3) - 다시 (1, 1)로 이동
+			// cursor_to(1, 1); // (1) - (1, 1)로 이동
+			// clear_line_n2m(1, 50); // (2) - 1열부터 50열까지 지움
+			// cursor_to(1, 1); // (3) - 다시 (1, 1)로 이동
 
 			FILE *status_fd = open_proc_stat(recv_pipe_data.hooked_pid); // 관찰중인 프로세스 열어봄
 			if (status_fd == NULL) {
@@ -319,19 +319,19 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 				cnt_page_fault++;
 			}
 
-			clear_line_n2m(1, 50);
-			cursor_to(2, 1);
-			log_msg_file(log_fd, "[RECEIVED] %s", recv_pipe_data.syscall_name);
+			// clear_line_n2m(1, 50);
+			// cursor_to(2, 1);
+			// log_msg_file(log_fd, "[RECEIVED] %s", recv_pipe_data.syscall_name);
 
-			clear_line_n2m(1, 50);
-			cursor_to(3, 1);
-			log_msg_file(log_fd, "[HOOKED PID] %d", recv_pipe_data.hooked_pid);
+			// clear_line_n2m(1, 50);
+			// cursor_to(3, 1);
+			// log_msg_file(log_fd, "[HOOKED PID] %d", recv_pipe_data.hooked_pid);
 
-			clear_line_n2m(1, 50);
-			cursor_to(4, 1);
-			log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault);
+			// clear_line_n2m(1, 50);
+			// cursor_to(4, 1);
+			// log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault);
 
-			print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
+			// print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
 		}
 		else if (read_bytes == 0){ // read가 0을 반환 -> 부모의 write파이프 닫힘
 			cursor_to(16, 1);
