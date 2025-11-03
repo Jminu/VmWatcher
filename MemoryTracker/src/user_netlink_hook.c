@@ -236,6 +236,7 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 		
 		if (first_event_flag == 0) { // 커널에서 메세지가 처음 왔을 때부터 시작
 			gettimeofday(&start_tv, NULL);
+			first_event_flag = 1;
 		}
 
 		strcpy(hooked_syscall, received_data->syscall_name);
