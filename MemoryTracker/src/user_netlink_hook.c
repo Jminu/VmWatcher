@@ -220,10 +220,11 @@ static void listen_syscall(FILE *log_fd) {
 		int len = recvmsg(nl_socket_fd, &msg, 0); // 커널에서 메세지 대기중..
 
 		if (len < 0) {
-			perror("[USER] Error during recvmsg");
-			free(nlh);
-			close(nl_socket_fd);
-			exit(1);
+			continue;
+			//perror("[USER] Error during recvmsg");
+			//free(nlh);
+			//close(nl_socket_fd);
+			//exit(1);
 		}
 
 		received_data = (struct syscall_data*)NLMSG_DATA(nlh);
