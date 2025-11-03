@@ -268,11 +268,11 @@ static void listen_syscall(FILE *log_fd) {
 
 		clear_line_n2m(1, 50);
 		cursor_to(2, 1);
-		log_msg_file(log_fd, "[RECEIVED] %s", recv_pipe_data.syscall_name);
+		log_msg_file(log_fd, "[RECEIVED] %s", received->syscall_name);
 
 		clear_line_n2m(1, 50);
 		cursor_to(3, 1);
-		log_msg_file(log_fd, "[HOOKED PID] %d", recv_pipe_data.hooked_pid);
+		log_msg_file(log_fd, "[HOOKED PID] %d", received->pid);
 
 		clear_line_n2m(1, 50);
 		cursor_to(4, 1);
