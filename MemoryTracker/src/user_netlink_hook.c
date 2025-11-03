@@ -277,19 +277,19 @@ static void listen_syscall(FILE *log_fd) {
 			cnt_page_fault++;
 		}
 
-		clear_line_n2m(1, 50);
-		cursor_to(2, 1);
-		log_msg_file(log_fd, "[RECEIVED] %s", received_data->syscall_name);
+		// clear_line_n2m(1, 50);
+		// cursor_to(2, 1);
+		// log_msg_file(log_fd, "[RECEIVED] %s", received_data->syscall_name);
 
-		clear_line_n2m(1, 50);
-		cursor_to(3, 1);
-		log_msg_file(log_fd, "[HOOKED PID] %d", received_data->pid);
+		// clear_line_n2m(1, 50);
+		// cursor_to(3, 1);
+		// log_msg_file(log_fd, "[HOOKED PID] %d", received_data->pid);
 
-		clear_line_n2m(1, 50);
-		cursor_to(4, 1);
-		log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault);
+		// clear_line_n2m(1, 50);
+		// cursor_to(4, 1);
+		// log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault);
 
-		print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
+		// print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
 	}
 
 	/*
