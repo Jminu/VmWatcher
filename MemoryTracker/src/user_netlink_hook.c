@@ -29,6 +29,10 @@ static struct syscall_data {
 	char syscall_name[10];
 };
 
+
+static struct timeval start_tv;
+static struct timeval end_tv;
+
 static void send_registration(int nl_socket_fd, struct sockaddr_nl *src_addr) {
     struct nlmsghdr *nlh = NULL;
     struct sockaddr_nl dest_addr;
@@ -207,6 +211,8 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	char monitored_proc_path[64];
 	snprintf(monitored_proc_path, sizeof(monitored_proc_path), "/proc/%s", monitored_pid);
 
+	int first_event_flag = 0;
+
 	while (1) {
 		if (access(monitored_proc_path, F_OK) == -1) { // 관찰중인 프로세스가 살아있는지 검사
 			break;
@@ -226,6 +232,10 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 
 		if (hooked_pid != pid) { // 관찰중인 프로세스 아니라면 생략
 			continue;
+		}
+		
+		if (first_event_flag == 0) { // 커널에서 메세지가 처음 왔을 때부터 시작
+			gettimeofday(&start_tv, NULL);
 		}
 
 		strcpy(hooked_syscall, received_data->syscall_name);
@@ -350,12 +360,7 @@ void run(FILE *log_fd) {
 		exit(1);
 	}
 
-	struct timeval start_tv;
-	struct timeval end_tv;
-
-
 	pid = fork();
-	gettimeofday(&start_tv, NULL);
 	if (pid == 0) { // child
 		close(fd[WRITE_PIPE]);
 		anal_child(fd[READ_PIPE], log_fd);
