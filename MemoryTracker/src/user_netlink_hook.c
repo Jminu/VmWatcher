@@ -253,13 +253,13 @@ static void listen_syscall(FILE *log_fd) {
 		MEM_INFO mem_info = get_mem_info(status_fd);
 		fclose(status_fd);
 
-		if (strcmp(received->syscall_name, "brk") == 0) {
+		if (strcmp(received_data->syscall_name, "brk") == 0) {
 			cnt_brk++;
 		}
-		else if (strcmp(received->syscall_name, "mmap") == 0) {
+		else if (strcmp(received_data->syscall_name, "mmap") == 0) {
 			cnt_mmap++;
 		}
-		else if (strcmp(received->syscall_name, "munmap") == 0) {
+		else if (strcmp(received_data->syscall_name, "munmap") == 0) {
 			cnt_munmap++;
 		}
 		else {
@@ -268,11 +268,11 @@ static void listen_syscall(FILE *log_fd) {
 
 		clear_line_n2m(1, 50);
 		cursor_to(2, 1);
-		log_msg_file(log_fd, "[RECEIVED] %s", received->syscall_name);
+		log_msg_file(log_fd, "[RECEIVED] %s", received_data->syscall_name);
 
 		clear_line_n2m(1, 50);
 		cursor_to(3, 1);
-		log_msg_file(log_fd, "[HOOKED PID] %d", received->pid);
+		log_msg_file(log_fd, "[HOOKED PID] %d", received_data->pid);
 
 		clear_line_n2m(1, 50);
 		cursor_to(4, 1);
