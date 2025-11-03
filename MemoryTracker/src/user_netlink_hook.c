@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 // 커널과 동일한 프로토콜 ID 및 구조체 정의
 #define NETLINK_JMW 30
@@ -297,6 +298,24 @@ static void listen_syscall(FILE *log_fd) {
 void run(FILE *log_fd) {
 	pid_t pid;
 
-	listen_syscall(log_fd);
+	// 시작
+	struct timeval start_tv;
+	struct timeval end_tv;
 	
+	gettimeofday(&start_tv, NULL);
+	
+	listen_syscall(log_fd); // 실행 코드
+
+	gettimeofday(&end_tv, NULL);
+
+
+	long long start_ms = (long long)start_tv.tv_sec * 1000 + (long long)start_tv.tv_usec / 1000;
+	long long end_ms = (long long)end_tv.tv_sec * 1000 + end_tv.tv_usec / 1000;
+	duration_ms = end_ms - start_ms;
+
+	cursor_to (21, 1);
+    printf("Total Elapsed Time: %lld ms\n", duration_ms); // %lld로 수정
+    fflush(stdout); // 즉시 터미널에 출력
+
+	// 종료
 }
