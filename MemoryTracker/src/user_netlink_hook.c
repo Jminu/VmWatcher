@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <fcntl.h>
-#include <sys/mmap.h>
+#include <sys/mman.h>
 
 // 커널과 동일한 프로토콜 ID 및 구조체 정의
 #define NETLINK_JMW 30
@@ -337,7 +337,7 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 
 			clear_line_n2m(1, 50);
 			cursor_to(4, 1);
-			log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld [pipe drop]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault, pipe_drop_cnt);
+			log_msg_file(log_fd, "[brk]: %ld [mmap]: %ld [munmap]: %ld [page fault]: %ld [pipe drop]: %ld", cnt_brk, cnt_mmap, cnt_munmap, cnt_page_fault, *pipe_drop_cnt_ptr);
 
 			print_ratio_graph(mem_info.vm_rss, mem_info.vm_size, log_fd);
 		}
