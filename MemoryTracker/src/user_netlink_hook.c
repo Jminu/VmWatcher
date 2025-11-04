@@ -14,6 +14,8 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <fcntl.h>
 
 // 커널과 동일한 프로토콜 ID 및 구조체 정의
 #define NETLINK_JMW 30
@@ -24,6 +26,9 @@
 #define READ_PIPE 0
 #define WRITE_PIPE 1
 
+// Timer
+static struct timeval start_tv;
+static struct timeval end_tv;
 static struct syscall_data {
     pid_t pid;
 	char syscall_name[10];
@@ -118,7 +123,6 @@ static int set_nl_socket() {
 	}
 	
 	log_msg("Complete Create Socket");
-	// sleep(1);
 
 	/*
 	 * 	memset으로 src_addr 0으로 초기화
@@ -142,11 +146,9 @@ static int set_nl_socket() {
 		return -1;
 	}
 	log_msg("Complete Bind");
-	// sleep(1);
 
 	send_registration(nl_socket_fd, &src_addr); // Kernel쪽에 소켓 등록요청
 	log_msg("Registration Complete Netlink Socket to Kernel");
-	// sleep(1);
 
 	return nl_socket_fd;
 }
@@ -171,6 +173,14 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	printf("[Watch PID]: ");
 	scanf("%d", &pid); // 관찰하려는 프로세스 PID입력
 
+	/*
+	 *	Non-Blocking Write Pipe Setting
+	 */
+	if (fcntl(write_pipe_fd, F_SETFL, fcntl(write_pipd_fd, F_GETFL) | O_NONBLOCK) == -1) {
+		perror("[PARENT] Error setting non-blocking pipe\n");
+		exit(1);
+	}
+
 	nl_socket_fd = set_nl_socket(); // get netlink socket fd
 
 	/*
@@ -194,7 +204,6 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	msg.msg_iovlen = 1;
 
 	log_msg("Complete Listening Setting");
-	// sleep(1);
 	printf("[USER] Listening...\n");
 	sleep(1);
 	clear_screen();
@@ -206,6 +215,8 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	sprintf(monitored_pid, "%d", pid);
 	char monitored_proc_path[64];
 	snprintf(monitored_proc_path, sizeof(monitored_proc_path), "/proc/%s", monitored_pid);
+
+	int first_event_flag = 0; // 실행시간 측정용
 
 	while (1) {
 		if (access(monitored_proc_path, F_OK) == -1) { // 관찰중인 프로세스가 살아있는지 검사
@@ -241,6 +252,11 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 				cursor_to(20, 1);
 				printf("[PARENT] Child Process Terminated\n");
 				break;
+			}
+			else if (errno == EAGAIN || errno == EWOULDBLOCK) { // Non-Blocking-pipe에서 쓰기 파이프가 꽉 찼을 때
+				cursor_to(21, 1);
+				printf("파이프가 가득 차서, 데이터를 버립니다.\n");
+				continue;
 			}
 			else { // 쓰기 기타 에러
 				cursor_to(19, 1);
