@@ -180,7 +180,7 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 	/*
 	 *	Non-Blocking Write Pipe Setting
 	 */
-	if (fcntl(write_pipe_fd, F_SETFL, fcntl(write_pipd_fd, F_GETFL) | O_NONBLOCK) == -1) {
+	if (fcntl(write_pipe_fd, F_SETFL, fcntl(write_pipe_fd, F_GETFL) | O_NONBLOCK) == -1) {
 		perror("[PARENT] Error setting non-blocking pipe\n");
 		exit(1);
 	}
