@@ -245,6 +245,8 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 		pipe_data.hooked_pid = hooked_pid;
 		strcpy(pipe_data.syscall_name, hooked_syscall);
 
+		static int pipe_drop_cnt = 0;
+
 		int written_bytes;
 		written_bytes = write(write_pipe_fd, &pipe_data, sizeof(pipe_data)); // send struct to child proc
 		if (written_bytes == -1) { // 쓰기 에러
@@ -254,8 +256,10 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 				break;
 			}
 			else if (errno == EAGAIN || errno == EWOULDBLOCK) { // Non-Blocking-pipe에서 쓰기 파이프가 꽉 찼을 때
+				pipe_drop_cnt++;
+
 				cursor_to(21, 1);
-				printf("파이프가 가득 차서, 데이터를 버립니다.\n");
+				printf("%d 파이프가 가득 차서, 데이터를 버립니다.\n", pipe_drop_cnt);
 				continue;
 			}
 			else { // 쓰기 기타 에러
