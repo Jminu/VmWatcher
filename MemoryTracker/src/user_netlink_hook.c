@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <sys/mmap.h>
 
 // 커널과 동일한 프로토콜 ID 및 구조체 정의
 #define NETLINK_JMW 30
@@ -25,7 +26,7 @@
 // Pipe
 #define READ_PIPE 0
 #define WRITE_PIPE 1
-static long pipe_drop_cnt = 0;
+long *pipe_drop_cnt_ptr = NULL; // 공유메모리 ptr
 
 // Timer
 static struct timeval start_tv;
@@ -257,7 +258,7 @@ static void listen_syscall(int write_pipe_fd, pid_t child_pid) {
 				break;
 			}
 			else if (errno == EAGAIN || errno == EWOULDBLOCK) { // Non-Blocking-pipe에서 쓰기 파이프가 꽉 찼을 때
-				pipe_drop_cnt++;
+				(*pipe_drop_cnt_ptr)++;
 				continue;
 			}
 			else { // 쓰기 기타 에러
@@ -362,6 +363,15 @@ static void anal_child(int read_pipe_fd, FILE *log_fd) {
 void run(FILE *log_fd) {
 	pid_t pid;
 	int fd[2];
+
+	pipe_drop_cnt_ptr = mmap(NULL, sizeof(long), PROT_READ | PROT_WRITE, 
+                             MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    
+    if (pipe_drop_cnt_ptr == MAP_FAILED) { 
+        perror("[USER] Error: mmap failed for shared counter"); 
+        exit(EXIT_FAILURE); 
+    }
+    *pipe_drop_cnt_ptr = 0; // 카운터를 0으로 초기화
 
 	if (pipe(fd) == -1) {
 		perror("Pipe Error");
